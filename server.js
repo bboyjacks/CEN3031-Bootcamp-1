@@ -6,6 +6,10 @@ var http = require('http'),
 /* Global variables */
 var listingData, server;
 
+const isGetListings = (parsedUrl) => {
+  return parsedUrl.path === '/listings';
+}
+
 var requestHandler = function(request, response) {
   var parsedUrl = url.parse(request.url);
 
@@ -24,7 +28,20 @@ var requestHandler = function(request, response) {
     HINT: Explore the list of MIME Types
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types
    */
+
+   if ( isGetListings(parsedUrl) ) {
+     response.writeHead(200);
+     response.write(listingData);
+     response.end();
+   } else {
+     response.writeHead(404);
+     response.write('Bad gateway error');
+     response.end();
+   }
+
 };
+
+
 
 fs.readFile('listings.json', 'utf8', function(err, data) {
   /*
@@ -42,10 +59,22 @@ fs.readFile('listings.json', 'utf8', function(err, data) {
 
    //Save the sate in the listingData variable already defined
   
+   if (err) {
+    listingData = {};
+   } else {
+    listingData = data;
+   }
 
   //Creates the server
   
   //Start the server
 
+  server = http.createServer(requestHandler);
+
+  server.listen(port, function() {
+    console.log(`Server listening on: http://127.0.0.1:${port}`);
+  });
+
 
 });
+
